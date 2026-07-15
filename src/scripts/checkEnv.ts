@@ -1,16 +1,22 @@
 import 'dotenv/config';
 
 const REQUIRED_VARS = [
-  'PORT',
-  'NODE_ENV',
   'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
   'SUPABASE_ANON_KEY',
   'SUPABASE_JWT_SECRET',
-  'FRONTEND_URL',
 ];
 
-const OPTIONAL_VARS = ['RESEND_API_KEY', 'FROM_EMAIL', 'CRON_SECRET', 'LOG_LEVEL'];
+// These all have defaults in src/config.ts — unset just means "using the default".
+const OPTIONAL_VARS = [
+  'PORT',
+  'NODE_ENV',
+  'FRONTEND_URL',
+  'RESEND_API_KEY',
+  'FROM_EMAIL',
+  'CRON_SECRET',
+  'LOG_LEVEL',
+];
 
 let missingRequired = 0;
 
