@@ -85,7 +85,10 @@ no real emails send during tests.
    `node dist/index.js` (see `railway.json`).
 4. Add a Railway uptime check on `GET /api/health`.
 5. Add a second Railway service for the shift-packet cron job — see
-   `MIGRATION.md` Task 2 for the `cronSchedule` config.
+   `railway.json`'s `shift-packet-cron` service. Its `cronSchedule` is UTC:
+   `15 14 * * *` = 14:15 UTC = 08:15 America/Chicago during CST. Adjust to
+   `15 13 * * *` (13:15 UTC) during CDT (Railway cron does not follow DST
+   automatically).
 
 ## API endpoint reference
 
