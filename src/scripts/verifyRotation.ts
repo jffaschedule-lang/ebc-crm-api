@@ -1,11 +1,11 @@
 import { supabaseAdmin } from '../config';
 import { logger } from '../logger';
 
-const ANCHOR = '2026-01-01'; // Platoon B
+const ANCHOR = '2026-07-16'; // Platoon A (confirmed)
 const START_DATE = '2026-01-01';
 const END_DATE = '2026-12-30';
 
-const PLATOON_BY_CYCLE_POS: Record<number, string> = { 0: 'B', 1: 'C', 2: 'A' };
+const PLATOON_BY_CYCLE_POS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C' };
 
 function daysBetween(a: string, b: string): number {
   const msPerDay = 24 * 60 * 60 * 1000;
@@ -20,7 +20,7 @@ function addDaysIso(dateStr: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** Expected platoon for a date given the anchor: 2026-01-01 = B, cycling B->C->A. */
+/** Expected platoon for a date given the anchor: 2026-07-16 = A, cycling A->B->C. */
 function expectedPlatoon(dateStr: string): string {
   const diff = daysBetween(ANCHOR, dateStr);
   const cyclePos = ((diff % 3) + 3) % 3;

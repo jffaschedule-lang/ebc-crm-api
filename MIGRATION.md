@@ -120,8 +120,8 @@ No step may be skipped.
 ## Section 4 — Rotation verification script
 
 `scripts/verifyRotation.ts` checks every date from 2026-01-01 through
-2026-12-30 against the known-correct platoon cycle (anchor: 2026-01-01 =
-Platoon B, cycling B→C→A→B→C→A… one platoon change per shift) and prints
+2026-12-30 against the known-correct platoon cycle (anchor: 2026-07-16 =
+Platoon A, cycling A→B→C→A→B→C… one platoon change per shift) and prints
 `PASS`/`FAIL` per date. It exits with code 1 if any date fails.
 
 ```bash
