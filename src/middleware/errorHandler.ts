@@ -17,7 +17,17 @@ export class HttpError extends Error {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction) {
-  logger.error('unhandled error', { err, path: req.originalUrl });
+  // Error instances don't survive JSON serialization (message/stack are
+  // non-enumerable), so pull the fields out explicitly or production logs
+  // show nothing but "unhandled error".
+  logger.error('unhandled error', {
+    message: err instanceof Error ? err.message : String(err),
+    stack: err instanceof Error ? err.stack : undefined,
+    code: err instanceof HttpError ? err.code : undefined,
+    status: err instanceof HttpError ? err.status : undefined,
+    method: req.method,
+    path: req.originalUrl,
+  });
 
   if (err instanceof ZodError) {
     const body: ApiError = {

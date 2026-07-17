@@ -24,6 +24,12 @@ import settingsRouter from './routes/settings';
 
 const app = express();
 
+// Railway terminates TLS and forwards requests through exactly one proxy hop,
+// so X-Forwarded-For must be trusted for req.ip (and express-rate-limit) to
+// see the real client address. Trust exactly 1 hop — never `true`, which would
+// let clients spoof X-Forwarded-For to bypass rate limiting.
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(cors({ origin: config.FRONTEND_URL }));
 app.use(express.json());
