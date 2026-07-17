@@ -13,7 +13,7 @@ export const fifoService = {
   async checkAndPromoteWaitlist(platoon: string, shiftDate: string): Promise<void> {
     const { data, error } = await supabaseAdmin
       .from('leave_records')
-      .select('*, employees!inner(platoon)')
+      .select('*, employees!leave_records_employee_id_fkey!inner(platoon)')
       .eq('shift_date', shiftDate)
       .eq('status', 'Waitlist')
       .eq('employees.platoon', platoon)

@@ -58,7 +58,7 @@ export const alSlotService = {
   }: CheckSlotFitParams): Promise<CheckSlotFitResult> {
     let query = supabaseAdmin
       .from('leave_records')
-      .select('id, span_start, span_end, employees!inner(platoon)')
+      .select('id, span_start, span_end, employees!leave_records_employee_id_fkey!inner(platoon)')
       .eq('shift_date', shiftDate)
       .eq('leave_type', 'AL')
       .in('status', ['Granted', 'Active'])
@@ -88,7 +88,7 @@ export const alSlotService = {
   async rebuildSlotLedger(platoon: string, shiftDate: string): Promise<void> {
     const { data, error } = await supabaseAdmin
       .from('leave_records')
-      .select('span_start, span_end, employees!inner(platoon)')
+      .select('span_start, span_end, employees!leave_records_employee_id_fkey!inner(platoon)')
       .eq('shift_date', shiftDate)
       .eq('leave_type', 'AL')
       .in('status', ['Granted', 'Active'])

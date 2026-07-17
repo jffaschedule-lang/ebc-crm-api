@@ -32,7 +32,9 @@ router.get(
   '/',
   asyncHandler(async (req, res) => {
     const q = listQuerySchema.parse(req.query);
-    let query = supabaseAdmin.from('leave_records').select('*, employees!inner(platoon)');
+    let query = supabaseAdmin
+      .from('leave_records')
+      .select('*, employees!leave_records_employee_id_fkey!inner(platoon)');
 
     if (q.shift_date) query = query.eq('shift_date', q.shift_date);
     if (q.platoon) query = query.eq('employees.platoon', q.platoon);
@@ -66,7 +68,7 @@ router.patch(
 
     const { data: record, error: fetchError } = await supabaseAdmin
       .from('leave_records')
-      .select('*, employees!inner(platoon)')
+      .select('*, employees!leave_records_employee_id_fkey!inner(platoon)')
       .eq('id', req.params.id)
       .single();
     assertNoDbError(fetchError, 'PATCH /leave-records/:id/status fetch');
