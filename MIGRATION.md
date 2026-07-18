@@ -139,3 +139,58 @@ node dist/scripts/verifyRotation.js
 - **Supabase**: DB size (free tier limit 500 MB), connection pool < 90%,
   watch the slow-query log.
 - **Vercel**: Core Web Vitals — LCP < 2.5s, CLS < 0.1, FID < 100ms.
+
+## Section 6 — "Deployed, but every metric shows 0"
+
+This means the schema exists but the operational data hasn't been
+generated yet — not that the roster is fake. Work through these in order;
+each one is a genuinely separate cause, so check all of them rather than
+stopping at the first fix.
+
+1. **Confirm the real roster is actually in the live database.** `schema.sql`
+   and `supabase/migrations/2026-07-16_seed_real_roster.sql` both already
+   seed the real JPFD roster (A/B/C platoons, emp_number 3001+) — but only
+   if one of those was actually run against *this* Supabase project. If the
+   project was bootstrapped from an older copy of `schema.sql` before the
+   real roster was folded in, `employees` may still hold only the original
+   12-row placeholder seed (`emp_number` 1001-1012). Check in the Supabase
+   SQL Editor:
+   ```sql
+   select count(*) from employees where emp_number between 1001 and 1012;
+   select count(*) from employees where emp_number >= 3001;
+   ```
+   If the first query returns rows and the second doesn't, run
+   `2026-07-16_seed_real_roster.sql` (it's additive/idempotent — safe to run
+   even if partially applied). Do **not** delete the 1001-1012 rows until
+   you've confirmed no `duty_ledger` / `payroll_rows` / `timesheet_segments`
+   / `shift_close` history references them — the commented-out block at the
+   bottom of that migration has the exact deactivate/delete statements once
+   that's confirmed; it's left commented deliberately.
+
+2. **Generate the duty ledger.** `duty_ledger` is never populated
+   automatically unless `auto_generate_duty_ledger` is set to `'true'` in
+   `settings` *and* the `POST /api/jobs/generate-duty-ledger` cron endpoint
+   is actually scheduled against this deployment (Railway cron, or
+   equivalent, hitting it daily with `X-Cron-Secret`). Otherwise it only
+   ever runs on demand:
+   - UI: Settings → Duty Board Config → "Generate Ledger for Date", or the
+     "Generate Duty Ledger" banner on Duty Board / Workforce Report when
+     on-duty shows 0 (supervisor/admin only).
+   - API: `POST /api/duty-ledger/generate` with `{ "date": "YYYY-MM-DD" }`.
+   Only dates covered by `rotation_schedule` will work (currently seeded
+   2026-07-01 through 2026-12-31 — check `Settings → Duty Board Config →
+   Rotation data range` for the live range). Generate each date you need
+   individually; it only creates rows for the platoon actually on duty that
+   day, which is why "generate for A platoon on date X" only makes sense
+   for dates where A is really on duty per the 15-day cycle.
+
+3. **Generate payroll.** Payroll is derived from the duty ledger, so it must
+   come after step 2 for the same date: `POST /api/payroll/date/YYYY-MM-DD/generate`.
+
+4. **Assign roles.** A brand-new deployment has zero rows in `roles`, so
+   nobody can reach supervisor/admin-gated screens (including the ones
+   needed for steps 2-3 above). The first login with no role assigned is
+   redirected to `/setup`, where "I am the Admin — Set Up My Account" calls
+   `POST /api/admin/setup-first-admin` and grants that account admin +
+   supervisor. From there, use Settings → User Roles to assign roles to
+   everyone else.
