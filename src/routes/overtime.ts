@@ -34,6 +34,16 @@ router.post(
   '/availability',
   asyncHandler(async (req, res) => {
     const body = availabilitySchema.parse(req.body);
+
+    // Mirrors the ownership check on DELETE /availability/:id below. Without
+    // this, any authenticated user could submit an employee_id that isn't
+    // their own (the frontend form is expected to only ever send the
+    // caller's own id, but the API must not rely on that).
+    const isSupervisor = req.user!.roles.includes('supervisor') || req.user!.roles.includes('admin');
+    if (!isSupervisor && body.employee_id !== req.user!.employeeId) {
+      throw new HttpError(403, 'FORBIDDEN', 'Can only add your own OT availability');
+    }
+
     const { data, error } = await supabaseAdmin
       .from('ot_availability')
       .insert({
