@@ -9,7 +9,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   SUPABASE_ANON_KEY: z.string().min(1),
   SUPABASE_JWT_SECRET: z.string().min(1),
-  FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  FRONTEND_URL: z.string().url().default('https://ebc-crm-web.vercel.app'),
   RESEND_API_KEY: z.string().optional().default(''),
   FROM_EMAIL: z.string().default('crm@ebc-fire.org'),
   CRON_SECRET: z.string().optional().default(''),

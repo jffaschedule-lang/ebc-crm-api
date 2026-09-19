@@ -35,7 +35,28 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(helmet());
-app.use(cors({ origin: config.FRONTEND_URL }));
+
+const allowedOrigins: (string | RegExp)[] = [
+  config.FRONTEND_URL,
+  /https:\/\/ebc-crm-.*\.vercel\.app$/,
+  /https:\/\/.*-jffaschedule-langs-projects\.vercel\.app$/,
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const allowed = allowedOrigins.some((o) => (typeof o === 'string' ? o === origin : o.test(origin)));
+      if (allowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked: ${origin}`));
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(requestLogger);
 
